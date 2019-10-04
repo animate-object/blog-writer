@@ -5,6 +5,31 @@ import "./App.css";
 import "react-mde/lib/styles/css/react-mde-all.css";
 import axios from "axios";
 
+function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = React.useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.log(error);
+      return initialValue;
+    }
+  });
+
+  const setValue = value => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return [storedValue, setValue];
+}
+
 const converter = new Showdown.Converter({
   tables: true,
   simplifiedAutoLink: true,
@@ -31,27 +56,35 @@ const confirmSave = (value, title, prefix, bucketName) => {
   );
 };
 
+const ConfigInput = props => {
+  const { value, onChange, label } = props;
+  const ref = React.useRef();
+  return (
+    <div className="input-block" onClick={() => ref && ref.current.focus()}>
+      <label className="label">{label}</label>
+      <input
+        ref={ref}
+        className="input"
+        type="text"
+        value={value}
+        onChange={({ target }) => onChange(target.value)}
+      />
+    </div>
+  );
+};
+
 export default function App() {
   const [value, setValue] = React.useState(". . . ");
   const [title, setTitle] = React.useState("More incredible insight");
-  const [bucketName, setBucketName] = React.useState("bucket");
-  const [prefix, setPrefix] = React.useState("");
+  const [bucketName, setBucketName] = useLocalStorage("bucket-name");
+  const [prefix, setPrefix] = useLocalStorage("prefix");
   const [selectedTab, setSelectedTab] = React.useState("write");
   return (
     <div className="container">
       <h1>Blog Writer</h1>
       <hr />
       <div className="input-blocks">
-        <div className="input-block">
-          <label className="label">Title</label>
-          <input
-            className="input"
-            type="text"
-            label="title"
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
+        <ConfigInput onChange={setTitle} label="Title" value={title} />
       </div>
       <ReactMde
         value={value}
@@ -62,26 +95,8 @@ export default function App() {
           Promise.resolve(converter.makeHtml(markdown))
         }
       />
-      <div className="input-block">
-        <label className="label">Bucket</label>
-        <input
-          className="input"
-          type="text"
-          label="title"
-          value={bucketName}
-          onChange={({ target }) => setBucketName(target.value)}
-        />
-      </div>
-      <div className="input-block">
-        <label className="label">Prefix</label>
-        <input
-          className="input"
-          type="text"
-          label="prefix"
-          value={prefix}
-          onChange={({ target }) => setPrefix(target.value)}
-        />
-      </div>
+      <ConfigInput label="Bucket" value={bucketName} onChange={setBucketName} />
+      <ConfigInput label="Prefix" value={prefix} onChange={setPrefix} />
       <button
         onClick={() =>
           confirmSave(value, title, prefix, bucketName) &&
