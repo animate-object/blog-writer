@@ -1,0 +1,40 @@
+.container {
+  height: 100%;
+  width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.input-blocks {
+  padding-bottom: 1em;
+}
+
+.input-block {
+  display: flex;
+}
+
+.input-block:focus-within {
+  background-color: #efefef;
+}
+
+.label {
+  font-size: 1.5em;
+  width: 10%;
+  font-weight: bolder;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.input {
+  font-size: 1.5em;
+  width: 90%;
+  border: 1px solid transparent;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.input:focus {
+  border: 1px solid black;
+  border-radius: 2px;
+  box-shadow: none;
+}
